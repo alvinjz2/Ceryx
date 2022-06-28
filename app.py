@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, abort
 
 app = Flask(__name__)
 app.config.from_object('config')
+
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
@@ -24,7 +25,7 @@ def valid_request(request):
 def deny():
     return 'Not authorized.'
 
-@app.route("/buy", methods=['GET'])
+@app.route("/buy", methods=['GET','POST'])
 def execute_buy():
     if request.method == 'GET':
         token = request.args.get('api_key')
@@ -33,9 +34,11 @@ def execute_buy():
         elif token != 'alvinjz2':
             return redirect('/not_authorized')
         return "Success"
+    else:
+        return "Default"
 
 
-@app.route("/sell", methods=['GET'])
+@app.route("/sell", methods=['GET','POST'])
 def execute_sell():
     if request.method == 'GET':
         token = request.args.get('api_key')
@@ -44,4 +47,9 @@ def execute_sell():
         elif token != 'alvinjz2':
             return redirect('/not_authorized')
         return "Success"
+    else:
+        return "Default"
 
+@app.route('/json-example', methods=['GET','POST'])
+def json_example():
+    return 'JSON Object Example'
