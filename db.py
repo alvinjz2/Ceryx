@@ -10,6 +10,12 @@ class database:
             print(f'Could not connect to database')
             raise Exception
 
+    def select(self) -> None:
+        return None
+
+    def delete(self) -> None:
+        return None
+        
     def __del__(self) -> None:
         try:
             self.c.close()
