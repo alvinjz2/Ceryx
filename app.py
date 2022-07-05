@@ -7,17 +7,16 @@ app.config.from_object('config')
 
 @app.route("/buy", methods=['POST'])
 def execute_buy():
-    return None
+    raise NotImplemented
 
 
 @app.route("/sell", methods=['POST'])
 def execute_sell():
-    return None
-
+    raise NotImplemented
 
 @app.route("/openorders", methods=['GET'])
 def get_openorders():
-    return None
+    raise NotImplemented
 
 
 @app.errorhandler(404)
