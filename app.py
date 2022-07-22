@@ -1,18 +1,19 @@
 from aioflask import Flask, request, Response
+from requests import NullHandler
 from db import Database
 from flask import render_template
 import asyncio
 import bcrypt
-
+from enum import Enum, auto
 app = Flask(__name__)
 app.config.from_object('config')
 
 
 @app.route("/buy", methods=['POST'])
 async def execute_buy():
-    allowed = await Authenticate(request.args.get('token'), 'buy')
-    if not allowed: 
-        return 
+    token = request.args.get('token')
+    if UserInfo(token):
+        return True
     raise NotImplemented
 
 
@@ -36,18 +37,34 @@ async def Authenticate():
     # Client will have a call to see if the user exists (token associated with user)
     # but permissions for Ceryx are not defined. 
     # could have read/write permission sets, aka two tables for each
-    username, password  = request.args.get('user'), request.args.get('pw')
-    RegisteredUsers = Database("RegisteredUsers") # Go to registered users to retrieve token
-    hash_user = bcrypt.hashpw(username, bcrypt.gensalt(4))
-    hash_pw = bcrypt.hashpw(password, bcrypt.gensalt(12))
-    try:
-        return RegisteredUsers.get_token(hash_user, hash_pw)
-    except:
-        raise Exception
+    username, password = request.args.get('user'), request.args.get('pw')
+    params = [UserDetail.token]
+    resp = UserInfo(username, password, params)
+    return resp
 
+@app.route("/register", methods=['POST'])
+async def Register():
     raise NotImplemented
 
 
+async def UserInfo(username="", password="", params=[], token=""):
+    if not len(params):
+        raise Exception
+    RegisteredUsers = Database("RegisteredUsers") # Go to registered users to retrieve token
+    hash_pw = bcrypt.hashpw(password, bcrypt.gensalt(12))
+    resp = RegisteredUsers.get_userinfo(username, hash_pw, token)
+    if resp is None:
+        return False
+    return [resp[p] for p in params] if len(params) > 1 else resp[params[0]]
+    
+class UserDetail(Enum):
+    token = 0
+    expired = auto()
+    user = auto()
+    password = auto()
+    admin = auto()
+    read = auto()
+    write = ()
 
 
 if __name__ == '__main__':
