@@ -1,6 +1,6 @@
 import sqlite3
 
-class database:
+class Database:
     def __init__(self, db_name) -> None:
         self.db = None
         try:
@@ -9,13 +9,16 @@ class database:
         except:
             print(f'Could not connect to database')
             raise Exception
-        self.c.execute("""Create Table If Not Exists Permissions (username text, password text, permissions text) """)
+        self.c.execute("""Create Table If Not Exists ? (username text, password text, permissions text) """, (db_name))
 
-    def select(self, username, password) -> None:
-        t = self.c.execute("""Select Permissions from Permissions Where username=? and password=?""", (username, password))
+    def is_user(self, username, password) -> None:
+        t = self.c.execute("""Select Token from Permissions Where username=? and password=?""", (username, password))
         for row in t:
             print(row)
         return None
+
+    def get_token(self, username, password) -> None:
+        raise NotImplemented
     def insert(self) -> None:
         t = self.c.execute("""Insert into Permissions (username, password, permissions) Values ('quant', 'quant', 'all')""")
 
@@ -28,7 +31,3 @@ class database:
         except:
             print(f'Could not close connection')
             raise Exception
-
-d = database('permissions')
-d.insert()
-d.select('quant', 'quant')
