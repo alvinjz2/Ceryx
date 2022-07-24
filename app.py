@@ -8,27 +8,36 @@ from enum import Enum, auto
 app = Flask(__name__)
 app.config.from_object('config')
 
-
+# write trade to db if successful
 @app.route("/buy", methods=['POST'])
 async def execute_buy():
     token = request.args.get('token')
-    if UserInfo(token):
+    if UserInfo(token=token, params=[UserDetail.write]):
         return True
     raise NotImplemented
 
 
 @app.route("/sell", methods=['POST'])
 async def execute_sell():
+    token = request.args.get('token')
+    if UserInfo(token=token, params=[UserDetail.write]):
+        return True
     raise NotImplemented
 
 
 @app.route("/openorders", methods=['GET'])
 async def get_openorders():
+    token = request.args.get('token')
+    if UserInfo(token=token, params=[UserDetail.read]):
+        return True
     raise NotImplemented
 
 
 @app.route("/profitandloss", methods=['GET'])
 async def get_profitandloss():
+    token = request.args.get('token')
+    if UserInfo(token=token, params=[UserDetail.read]):
+        return True
     raise NotImplemented
 
 @app.route("/authenticate", methods=['POST'])
@@ -50,9 +59,9 @@ async def Register():
 async def UserInfo(username="", password="", params=[], token=""):
     if not len(params):
         raise Exception
-    RegisteredUsers = Database("RegisteredUsers") # Go to registered users to retrieve token
+    Quant = Database("Quant") # Go to registered users to retrieve token
     hash_pw = bcrypt.hashpw(password, bcrypt.gensalt(12))
-    resp = RegisteredUsers.get_userinfo(username, hash_pw, token)
+    resp = Quant.get_userinfo(username, hash_pw, token)
     if resp is None:
         return False
     return [resp[p] for p in params] if len(params) > 1 else resp[params[0]]
