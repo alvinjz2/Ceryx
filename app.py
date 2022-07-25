@@ -1,7 +1,7 @@
 from aioflask import Flask, request, Response
-from requests import NullHandler
+import secrets
+
 from db import Database
-from flask import render_template
 import asyncio
 import bcrypt
 from enum import Enum, auto
@@ -12,7 +12,7 @@ app.config.from_object('config')
 @app.route("/buy", methods=['POST'])
 async def execute_buy():
     token = request.args.get('token')
-    if UserInfo(token=token, params=[UserDetail.write]):
+    if await UserInfo(token=token, params=[UserDetail.write]):
         return True
     raise NotImplemented
 
@@ -20,7 +20,7 @@ async def execute_buy():
 @app.route("/sell", methods=['POST'])
 async def execute_sell():
     token = request.args.get('token')
-    if UserInfo(token=token, params=[UserDetail.write]):
+    if await UserInfo(token=token, params=[UserDetail.write]):
         return True
     raise NotImplemented
 
@@ -28,7 +28,7 @@ async def execute_sell():
 @app.route("/openorders", methods=['GET'])
 async def get_openorders():
     token = request.args.get('token')
-    if UserInfo(token=token, params=[UserDetail.read]):
+    if await UserInfo(token=token, params=[UserDetail.read]):
         return True
     raise NotImplemented
 
@@ -36,7 +36,7 @@ async def get_openorders():
 @app.route("/profitandloss", methods=['GET'])
 async def get_profitandloss():
     token = request.args.get('token')
-    if UserInfo(token=token, params=[UserDetail.read]):
+    if await UserInfo(token=token, params=[UserDetail.read]):
         return True
     raise NotImplemented
 
@@ -48,25 +48,31 @@ async def Authenticate():
     # could have read/write permission sets, aka two tables for each
     username, password = request.args.get('user'), request.args.get('pw')
     params = [UserDetail.token]
-    resp = UserInfo(username, password, params)
+    resp = await UserInfo(username, password, params)
     return resp
 
 @app.route("/register", methods=['POST'])
 async def Register():
-    if request.args.get('')
+    token = request.args.get('token')
+    if await UserInfo(token=token, params=[UserDetail.admin]):
+        Quant = Database('Quant')
+        secret_token = secrets.token_hex(16)
+        resp = Quant.add_user(secret_token)
+        return True
     raise NotImplemented
 
 
 async def UserInfo(username="", password="", params=[], token=""):
     if not len(params):
         raise Exception
-    Quant = Database("Quant") # Go to registered users to retrieve token
+    Quant = Database('Quant') # Go to registered users to retrieve token
     hash_pw = bcrypt.hashpw(password, bcrypt.gensalt(12))
     resp = Quant.get_userinfo(username, hash_pw, token)
     if resp is None:
         return False
     return [resp[p] for p in params] if len(params) > 1 else resp[params[0]]
     
+
 class UserDetail(Enum):
     token = 0
     expired = auto()
