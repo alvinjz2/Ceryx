@@ -53,6 +53,7 @@ async def Authenticate():
 
 @app.route("/register", methods=['POST'])
 async def Register():
+    if request.args.get('')
     raise NotImplemented
 
 
@@ -73,7 +74,7 @@ class UserDetail(Enum):
     password = auto()
     admin = auto()
     read = auto()
-    write = ()
+    write = auto()
 
 
 if __name__ == '__main__':
