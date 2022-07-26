@@ -1,5 +1,6 @@
 from aioflask import Flask, request, Response
 import secrets
+from datetime import datetime, strptime
 
 from db import Database
 import asyncio
@@ -47,9 +48,11 @@ async def Authenticate():
     # but permissions for Ceryx are not defined. 
     # could have read/write permission sets, aka two tables for each
     username, password = request.args.get('user'), request.args.get('pw')
-    params = [UserDetail.token]
+    params = [UserDetail.token, UserDetail.expired]
     resp = await UserInfo(username, password, params)
-    return resp
+    if datetime.datetime.now() > strptime(resp[UserDetail.expired]):
+        return False
+    return resp[UserDetail.token]
 
 @app.route("/register", methods=['POST'])
 async def Register():
