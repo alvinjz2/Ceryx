@@ -10,37 +10,34 @@ from enum import Enum, auto
 app = Flask(__name__)
 app.config.from_object('config')
 
-# write trade to db if successful
 @app.route("/buy", methods=['POST'])
 async def execute_buy():
     token = request.args.get('token')
-    if await UserInfo(token=token, params=[UserDetail.write]):
+    if await AllowedWrite(token):
         return True
-    raise NotImplemented
+
 
 
 @app.route("/sell", methods=['POST'])
 async def execute_sell():
     token = request.args.get('token')
-    if await UserInfo(token=token, params=[UserDetail.write]):
+    if await AllowedWrite(token):
         return True
-    raise NotImplemented
 
 
 @app.route("/openorders", methods=['GET'])
 async def get_openorders():
     token = request.args.get('token')
-    if await UserInfo(token=token, params=[UserDetail.read]):
+    if await AllowedRead(token):
         return True
-    raise NotImplemented
 
 
 @app.route("/profitandloss", methods=['GET'])
 async def get_profitandloss():
     token = request.args.get('token')
-    if await UserInfo(token=token, params=[UserDetail.read]):
+    if await AllowedRead(token):
         return True
-    raise NotImplemented
+
 
 @app.route("/authenticate", methods=['POST'])
 async def Authenticate():
@@ -66,20 +63,38 @@ async def Register():
             if exp_time == None:
                 raise Exception 
             resp = Quant.add_user(secret_token, expire=exp_time)
-        resp = Quant.add_user(secret_token, username=new_user, password=new_pw, expire=exp_time)
+        else:
+            resp = Quant.add_user(secret_token, username=new_user, password=new_pw, expire=exp_time)
     return resp
 
 
 async def UserInfo(username="", password="", params=[], token=""):
     if not len(params):
         raise Exception
-    Quant = Database('Quant') # Go to registered users to retrieve token
+    Quant = Database('Quant')
     hash_pw = bcrypt.hashpw(password, bcrypt.gensalt(12))
     resp = Quant.get_userinfo(username, hash_pw, token)
     if resp is None:
         return False
     return [resp[p] for p in params] if len(params) > 1 else resp[params[0]]
     
+async def AllowedWrite(token):
+    resp = await UserInfo(token=token, params=[UserDetail.write, UserDetail.expired])
+    if not resp:
+        return False
+    if datetime.datetime.now() > strptime(resp[UserDetail.expired]):
+        return False
+    if resp[UserDetail.read]:
+        return True
+
+async def AllowedRead(token):
+    resp = await UserInfo(token=token, params=[UserDetail.read, UserDetail.expired])
+    if not resp:
+        return False
+    if datetime.datetime.now() > strptime(resp[UserDetail.expired]):
+        return False
+    if resp[UserDetail.read]:
+        return True
 
 class UserDetail(Enum):
     token = 0
