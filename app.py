@@ -1,3 +1,4 @@
+from cmath import exp
 from aioflask import Flask, request, Response
 import secrets
 from datetime import datetime, strptime
@@ -58,11 +59,15 @@ async def Authenticate():
 async def Register():
     token = request.args.get('token')
     if await UserInfo(token=token, params=[UserDetail.admin]):
+        new_user, new_pw, exp_time = request.args.get('new_user'), request.args.get('new_pw'), request.args.get('exp_time')
         Quant = Database('Quant')
         secret_token = secrets.token_hex(16)
-        resp = Quant.add_user(secret_token)
-        return True
-    raise NotImplemented
+        if new_user == None or new_pw == None:
+            if exp_time == None:
+                raise Exception 
+            resp = Quant.add_user(secret_token, expire=exp_time)
+        resp = Quant.add_user(secret_token, username=new_user, password=new_pw, expire=exp_time)
+    return resp
 
 
 async def UserInfo(username="", password="", params=[], token=""):
