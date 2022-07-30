@@ -82,7 +82,7 @@ async def AllowedWrite(token):
     resp = await UserInfo(token=token, params=[UserDetail.write, UserDetail.expired])
     if not resp:
         return False
-    if datetime.datetime.now() > strptime(resp[UserDetail.expired]):
+    if datetime.now() > strptime(resp[UserDetail.expired]):
         return False
     if resp[UserDetail.read]:
         return True
@@ -91,7 +91,7 @@ async def AllowedRead(token):
     resp = await UserInfo(token=token, params=[UserDetail.read, UserDetail.expired])
     if not resp:
         return False
-    if datetime.datetime.now() > strptime(resp[UserDetail.expired]):
+    if datetime.now() > strptime(resp[UserDetail.expired]):
         return False
     if resp[UserDetail.read]:
         return True
