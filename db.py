@@ -1,4 +1,6 @@
 import sqlite3
+import bcrypt
+
 """
 table scheme:
 token user pass admin read write
@@ -15,7 +17,6 @@ token to api request because what if temp user, might not need to store info in 
 
 """
 
-
 class Database:
     def __init__(self, db_name) -> None:
         self.db = None
@@ -27,7 +28,8 @@ class Database:
         self.c.execute("""Create Table If Not Exists Users 
         (token text default null, expire_time text default null, 
         username text default null, password text default null, 
-        admin integer default 0, read integer default 1, write integer default 0) """)
+        salt text default null, admin integer default 0, 
+        read integer default 1, write integer default 0) """)
 
         self.c.execute("""Create Table If Not Exists Log 
         (timestamp text default null, token text default null, method text default null) """)
