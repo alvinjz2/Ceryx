@@ -63,6 +63,10 @@ async def Authenticate():
     if datetime.datetime.now() > strptime(resp[UserDetail.expired]):
         return False
     return resp[UserDetail.token]
+    resp = await UserInfo(username, password)
+    if time_expired(resp[UserDetail.expired.value]):
+        abort(410)
+    return resp[UserDetail.token.value]
 
 @app.route("/register", methods=['POST'])
 async def Register():
@@ -97,6 +101,9 @@ async def AllowedWrite(token):
     if datetime.now() > strptime(resp[UserDetail.expired]):
         return False
     if resp[UserDetail.read]:
+    if time_expired(resp[UserDetail.expired.value]):
+        abort(410)
+    if resp[UserDetail.read.value]:
         return True
 
 async def AllowedRead(token):
@@ -106,6 +113,9 @@ async def AllowedRead(token):
     if datetime.now() > strptime(resp[UserDetail.expired]):
         return False
     if resp[UserDetail.read]:
+    if time_expired(resp[UserDetail.expired.value]):
+        abort(410)
+    if resp[UserDetail.read.value]:
         return True
 
 class UserDetail(Enum):
@@ -116,6 +126,10 @@ class UserDetail(Enum):
     admin = auto()
     read = auto()
     write = auto()
+def time_expired(expire_date):
+    return True if datetime.datetime.now() > datetime.datetime.strptime(expire_date, '%m/%d/%Y') else False
+
+
 
 
 if __name__ == '__main__':
