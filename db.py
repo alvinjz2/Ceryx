@@ -1,5 +1,9 @@
 import sqlite3
 import bcrypt
+import secrets
+from enum import Enum, auto
+
+
 
 """
 table scheme:
@@ -16,6 +20,16 @@ write: only post requests
 token to api request because what if temp user, might not need to store info in db
 
 """
+class UserDetail(Enum):
+    token = 0
+    expired = auto()
+    user = auto()
+    password = auto()
+    admin = auto()
+    salt = auto()
+    read = auto()
+    write = auto()
+
 
 class Database:
     def __init__(self, db_name) -> None:
