@@ -84,18 +84,21 @@ async def Register():
     return resp
 
 
-async def UserInfo(username="", password="", params=[], token=""):
-    if not len(params):
-        raise Exception
+async def UserInfo(username=None, password=None, token=None):
     Quant = Database('Quant')
-    hash_pw = bcrypt.hashpw(password, bcrypt.gensalt(12))
-    resp = Quant.get_userinfo(username, hash_pw, token)
+    if username != None and password != None:
+        resp = Quant.get_userinfo_via_userpass(username, password)
+    elif token != None:
+        resp = Quant.get_userinfo_via_token(token)
+    else:
+        # Unsupported auth method
+        return Exception
     if resp is None:
         return False
-    return [resp[p] for p in params] if len(params) > 1 else resp[params[0]]
+    return resp
     
 async def AllowedWrite(token):
-    resp = await UserInfo(token=token, params=[UserDetail.write, UserDetail.expired])
+    resp = await UserInfo(token=token)
     if not resp:
         return False
     if datetime.now() > strptime(resp[UserDetail.expired]):
@@ -108,6 +111,7 @@ async def AllowedWrite(token):
 
 async def AllowedRead(token):
     resp = await UserInfo(token=token, params=[UserDetail.read, UserDetail.expired])
+    resp = await UserInfo(token=token)
     if not resp:
         return False
     if datetime.now() > strptime(resp[UserDetail.expired]):
