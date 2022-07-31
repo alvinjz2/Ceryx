@@ -54,11 +54,28 @@ class Database:
             self.db.commit()
             return True
         except:
+    def get_userinfo_via_userpass(self, username, password):
+        user_pass_query = self.c.execute("""Select * from Users Where username=? """, [username])
+        user_pass_info = list(user_pass_query.fetchone())
+        db_pw = user_pass_info[UserDetail.password.value]
+
+        if bcrypt.checkpw(password.encode('utf-8'), db_pw.encode('utf-8')):
+            return user_pass_info
+        else:
+            print('Incorrect Password')
             return False
         
     def get_userinfo(self, username, password, token=""):
         params = ('Users', username, password, token)
         return self.select_row(params)
+
+
+    def get_userinfo_via_token(self, token):
+        token_query = self.c.execute("""Select * from Users Where token = ?""", [token])
+        token_info = list(token_query.fetchone())
+        return token_info if token_info else False
+
+
 
     def select_row(self, params):
         resp = self.c.execute("""Select * from ? Where (username=? AND password=?) OR token = ?""", params)
