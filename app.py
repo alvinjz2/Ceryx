@@ -10,6 +10,18 @@ from enum import Enum, auto
 app = Flask(__name__)
 app.config.from_object('config')
 
+# Error Handling Section
+token_expired = "Token is no longer valid since it has expired"
+not_allowed = "Not authorized to perform this action"
+
+@app.errorhandler(410)
+def expired(error):
+    return token_expired, 410
+
+@app.errorhandler(401)
+def unauthorized(error):
+    return not_allowed, 401
+
 @app.route("/buy", methods=['POST'])
 async def execute_buy():
     token = request.args.get('token')
