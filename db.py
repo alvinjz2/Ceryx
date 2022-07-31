@@ -43,8 +43,15 @@ class Database:
 
     def insert_row(self, params):
         # Table, Columns, Data
+    def add_user(self, username=None, password=None, expire = None, admin = 0, read = 1, write = 0):
+        secret_token = secrets.token_hex(16)
+        salt = bcrypt.gensalt(12)
+        hash_pw = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        salt = salt.decode('utf-8')
+        params = [secret_token, expire, username, hash_pw, salt, admin, read, write]
         try:
-            self.c.execute("""Insert into ? ? Values ? """, params)
+            self.c.execute("""Insert Into Users Values (?, ?, ?, ?, ?, ?, ?, ?)""", params)
+            self.db.commit()
             return True
         except:
             return False
