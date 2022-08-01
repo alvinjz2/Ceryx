@@ -10,13 +10,19 @@ app.config.from_object('config')
 token_expired = "Token is no longer valid since it has expired"
 not_allowed = "Not authorized to perform this action"
 
-@app.errorhandler(410)
-def expired(error):
-    return token_expired, 410
-
 @app.errorhandler(401)
 def unauthorized(error):
     return not_allowed, 401
+
+@app.errorhandler(403)
+def forbidden(error):
+    return not_allowed, 403
+
+@app.errorhandler(410)
+def gone(error):
+    return token_expired, 410
+
+
 
 @app.route("/buy", methods=['POST'])
 async def execute_buy():
@@ -83,7 +89,7 @@ async def UserInfo(username=None, password=None, token=None):
         # Unsupported auth method
         return Exception
     if resp is None:
-        return False
+        abort(401)
     return resp
     
 async def AllowedWrite(token):
@@ -103,6 +109,8 @@ async def AllowedRead(token):
         abort(410)
     if resp[UserDetail.read.value]:
         return True
+    else:
+        abort(403)
 
 def time_expired(expire_date):
     return True if datetime.datetime.now() > datetime.datetime.strptime(expire_date, '%m/%d/%Y') else False
