@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 import bcrypt
 import secrets
@@ -48,15 +49,10 @@ class Database:
         self.c.execute("""Create Table If Not Exists Log 
         (timestamp text default null, token text default null, method text default null) """)
 
-    def add_action(self):
-        params = ('Log')
+    def add_action(self, timestamp, token, action):
+        self.c.execute("""Insert Into Log Values (?, ?, ?)""" , (timestamp, token, action))
+        self.db.commit()
 
-    def add_user(self, token, username="", password="", expire = "", admin = "", read = 1, write = 0):
-        params = ('Users', ('token', 'expire', 'username', 'password', 'admin', 'read', 'write'), (token, expire, username, password, admin, read, write))
-        return self.insert_row(params)
-
-    def insert_row(self, params):
-        # Table, Columns, Data
     def add_user(self, username=None, password=None, expire = None, admin = 0, read = 1, write = 0):
         secret_token = secrets.token_hex(16)
         salt = bcrypt.gensalt(12)
@@ -67,7 +63,10 @@ class Database:
             self.c.execute("""Insert Into Users Values (?, ?, ?, ?, ?, ?, ?, ?)""", params)
             self.db.commit()
             return True
-        except:
+        except Exception as e:
+            return e
+
+
     def get_userinfo_via_userpass(self, username, password):
         user_pass_query = self.c.execute("""Select * from Users Where username=? """, [username])
         user_pass_info = list(user_pass_query.fetchone())
@@ -78,10 +77,6 @@ class Database:
         else:
             print('Incorrect Password')
             return False
-        
-    def get_userinfo(self, username, password, token=""):
-        params = ('Users', username, password, token)
-        return self.select_row(params)
 
 
     def get_userinfo_via_token(self, token):
@@ -90,14 +85,15 @@ class Database:
         return token_info if token_info else False
 
 
+    def user_exists(self, username=None, password=None, token=None):
+        userpass = self.c.execute("""Select Exists (Select 1 from Users Where (username=? AND password=?) Limit 1) """, [username, password])
+        token = self.c.execute("""Select Exists (Select 1 from Users Where token=? Limit 1)""", [token])
+        return True if userpass.fetchone[0] or token.fetchone[0] else False
 
-    def select_row(self, params):
-        resp = self.c.execute("""Select * from ? Where (username=? AND password=?) OR token = ?""", params)
-        return resp
 
     def __del__(self) -> None:
         try:
-            self.c.close()
+            self.db.close()
         except:
             print(f'Could not close connection')
             raise Exception
