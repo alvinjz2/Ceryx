@@ -33,7 +33,7 @@ async def execute_buy():
         await LogAction(resp[1], token, request.path, details)
         return "Success"
     else:
-        return "Failed"
+        abort(401)
 
 
 @app.route("/sell", methods=['POST'])
@@ -45,7 +45,7 @@ async def execute_sell():
         await LogAction(resp[1], token, request.path, details)
         return "Success"
     else:
-        return "Failed"
+        abort(401)
 
 
 @app.route("/openorders", methods=['GET'])
@@ -57,7 +57,7 @@ async def get_openorders():
         await LogAction(resp[1], token, request.path, details)
         return "Success"
     else:
-        return "Failed"
+        abort(401)
 
 @app.route("/profitandloss", methods=['GET'])
 async def get_profitandloss():
@@ -68,7 +68,7 @@ async def get_profitandloss():
         await LogAction(resp[1], token, request.path, details)
         return "Success"
     else:
-        return "Failed"
+        abort(401)
 
 @app.route("/authenticate", methods=['POST'])
 async def Authenticate():
@@ -106,7 +106,6 @@ async def UserInfo(username=None, password=None, token=None):
     else:
         # Unsupported auth method
         abort(401)
-    print(resp)
     if resp is None:
         abort(401)
     return resp, db
@@ -120,7 +119,7 @@ async def AllowedWrite(token):
     if resp[0][UserDetail.read.value]:
         return True, resp[1]
     else:
-        abort(403)
+        return False, resp[1]
 
 async def AllowedRead(token):
     resp = await UserInfo(token=token)
@@ -131,14 +130,14 @@ async def AllowedRead(token):
     if resp[0][UserDetail.read.value]:
         return True, resp[1]
     else:
-        abort(403)
+        return False, resp[1]
 
-async def LogAction(db, token, action):
+async def LogAction(db, token, action, details):
     try:
         current_time = datetime.datetime.now()
         date = datetime.datetime.strftime(current_time, "%m/%d/%Y")
         timestamp = datetime.datetime.strftime(current_time, "%H:%M:%S:%f")
-        db.add_action(date, timestamp, token, action)
+        db.add_action(date, timestamp, token, action, details)
     except:
         abort(403)
 
