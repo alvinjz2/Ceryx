@@ -41,16 +41,14 @@ class Database:
         except:
             raise Exception
         self.c.execute("""Create Table If Not Exists Users 
-        (token text default null, expire_time text default null, 
-        username text default null, password text default null, 
-        salt text default null, admin integer default 0, 
-        read integer default 1, write integer default 0) """)
+        (token text default null, expire_time text default null, username text default null, password text default null, 
+        salt text default null, admin integer default 0, read integer default 1, write integer default 0) """)
 
         self.c.execute("""Create Table If Not Exists Log 
-        (timestamp text default null, token text default null, method text default null) """)
+        (date text default null, timestamp text default null, token text default null, method text default null) """)
 
-    def add_action(self, timestamp, token, action):
-        self.c.execute("""Insert Into Log Values (?, ?, ?)""" , (timestamp, token, action))
+    def add_action(self, date, timestamp, token, action):
+        self.c.execute("""Insert Into Log Values (?, ?, ?, ?)""" , (date, timestamp, token, action))
         self.db.commit()
 
     def add_user(self, username=None, password=None, expire = None, admin = 0, read = 1, write = 0):
@@ -97,3 +95,7 @@ class Database:
         except:
             print(f'Could not close connection')
             raise Exception
+
+
+
+
