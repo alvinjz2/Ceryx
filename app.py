@@ -29,7 +29,8 @@ async def execute_buy():
     token = request.args.get('token')
     resp = await AllowedWrite(token)
     if resp[0]:
-        await LogAction(resp[1], token, 'buy')
+        details = ""
+        await LogAction(resp[1], token, request.path, details)
         return "Success"
     else:
         return "Failed"
@@ -40,7 +41,8 @@ async def execute_sell():
     token = request.args.get('token')
     resp = await AllowedWrite(token)
     if resp[0]:
-        await LogAction(resp[1], token, 'sell')
+        details = ""
+        await LogAction(resp[1], token, request.path, details)
         return "Success"
     else:
         return "Failed"
@@ -51,7 +53,8 @@ async def get_openorders():
     token = request.args.get('token')
     resp = await AllowedRead(token)
     if resp[0]:
-        await LogAction(resp[1], token, 'getopenorders')
+        details = ""
+        await LogAction(resp[1], token, request.path, details)
         return "Success"
     else:
         return "Failed"
@@ -61,11 +64,12 @@ async def get_profitandloss():
     token = request.args.get('token')
     resp = await AllowedRead(token)
     if resp[0]:
-        await LogAction(resp[1], token, 'getprofitandloss')
+        details = ""
+        await LogAction(resp[1], token, request.path, details)
         return "Success"
     else:
         return "Failed"
-        
+
 @app.route("/authenticate", methods=['POST'])
 async def Authenticate():
     # Check if token exists in the permissions table.
