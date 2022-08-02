@@ -45,10 +45,10 @@ class Database:
         salt text default null, admin integer default 0, read integer default 1, write integer default 0) """)
 
         self.c.execute("""Create Table If Not Exists Log 
-        (date text default null, timestamp text default null, token text default null, method text default null) """)
+        (date text default null, timestamp text default null, token text default null, method text default null, details text default null) """)
 
-    def add_action(self, date, timestamp, token, action):
-        self.c.execute("""Insert Into Log Values (?, ?, ?, ?)""" , (date, timestamp, token, action))
+    def add_action(self, date, timestamp, token, method, details):
+        self.c.execute("""Insert Into Log Values (?, ?, ?, ?, ?)""" , (date, timestamp, token, method, details))
         self.db.commit()
 
     def add_user(self, username=None, password=None, expire = None, admin = 0, read = 1, write = 0):
